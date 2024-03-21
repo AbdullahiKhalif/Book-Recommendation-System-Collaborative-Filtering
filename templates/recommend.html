@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Recommendation System</title>
+    <!-- Include Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="">
+    <div class="max-w-4xl mx-auto mt-4 py-16">
+        <!-- Header -->
+        <div class="fixed top-0 left-0 right-0 bg-white bg-opacity-60 backdrop-blur-md shadow-md z-10">
+            <div class="max-w-4xl mx-auto flex justify-between items-center p-4">
+                <a href="#" class="text-2xl font-bold">
+                    BOOK RECOMMENDER
+
+                </a>
+                <ul class="hidden lg:flex space-x-8 text-xl text-gray-700">
+                    <li>
+                        <a href="/" class="hover:text-pink-700">Home</a>
+                    </li>
+                     <li>
+                        <a href="/" class="hover:text-pink-700">About</a>
+                    </li>
+                    <li>
+                        <a href="/" class="hover:text-pink-700">Top 50</a>
+                    </li>
+                    <li>
+                         <a href="#" class="hover:text-pink-700">Recommend</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- End Header -->
+         <div class="container mx-auto px-4 py-8">
+
+
+<!--  books Recommender-->
+             <div>
+                  <form action="/recommend_books" method="post">
+        <div class="relative mt-8">
+
+                   <input type="text" name="user_input" placeholder="Search a book" class="w-full p-2 pl-10 border rounded shadow focus:outline-none border-pink-400" required >
+
+      <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+        <i class="fa fa-search w-6 h-6 text-pink-600"></i>
+      </span>
+
+             </div>
+                      <input type="submit" class="bg-pink-600 p-2 flex items-center text-center text-white font-bold text-xl w-28 rounded-lg mt-3 shodow hover:bg-pink-800 transition-colors duration-300">
+        </form>
+
+             </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 mt-3 lg:grid-cols-3 gap-4 m-2">
+            {% if data %}
+
+             {% for i in data %}
+                <div class="border border-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200 ease-in">
+
+               <img
+                    src="{{i[2]}}"
+                    alt={{i[0]}}
+                    class="w-full h-48 rounded object-cover transition-transform duration-500 transform hover:scale-110 hover:rounded-lg"
+                  />
+                    <div class="p-4">
+                        <h2 class="font-bold mb-4">Book Title - {{i[0]}}</h2>
+                        <p class="text-gray-600 mb-4 truncate"> {{i[1]}}</p>
+                    </div>
+                </div>
+             {% endfor %}
+
+            {% endif %}
+        </div>
+
+<!--    end Book Recommender-->
+
+        <div class="py-6 mt-16 border-t border-gray-200">
+      <div class="max-w-4x mx-auto text-center">
+        <p class="text-gray-600 font-light mb-2">
+          Thank you for visiting our website.
+        </p>
+        <p class="text-gray-800 text-lg font-semibold">
+          Book recommender &copy; 2024.
+        </p>
+      </div>
+    </div>
+    </div>
+</body>
+</html>
