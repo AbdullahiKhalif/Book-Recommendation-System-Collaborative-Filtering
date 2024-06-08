@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request
+import re
+
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+import mysql.connector
 import pickle
 import numpy as np
 
@@ -9,17 +12,89 @@ books = pickle.load(open('models/books.pkl', 'rb'))
 similarity_scores = pickle.load(open('models/similarity_scores.pkl', 'rb'))
 
 app = Flask(__name__)
+app.secret_key = "dgjrywtaygy465fggs"
 
+# MySQL configurations
+mysql_config = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': '',
+    'database': 'book_recommendation_system'
+}
 
 @app.route('/')
 def index():
-    return render_template('index.html',
-                           book_name=list(popular_df['Book-Title'].values),
-                           author=list(popular_df['Book-Author'].values),
-                           image=list(popular_df['Image-URL-M'].values),
-                           votes=list(popular_df['num_ratings'].values),
-                           rating=list(popular_df['avg_rating'].values))
+    if 'username' in session:
 
+        return render_template('index.html',
+                               book_name=list(popular_df['Book-Title'].values),
+                               author=list(popular_df['Book-Author'].values),
+                               image=list(popular_df['Image-URL-M'].values),
+                               votes=list(popular_df['num_ratings'].values),
+                               rating=list(popular_df['avg_rating'].values))
+    return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        conn = mysql.connector.connect(**mysql_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE email = %s AND password = %s", (email, password))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if user:
+            session['username'] = user['name']
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', error='Sorry Invalid email or password')
+
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+
+        # Check if the name is valid
+        if not is_valid_name(name):
+            return render_template('signup.html', error='Invalid name. Please enter a valid name.')
+
+        # Check if email already exists
+        conn = mysql.connector.connect(**mysql_config)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        if user:
+            cursor.close()
+            conn.close()
+            return render_template('signup.html', error='Email already exists')
+
+        # Insert user into database
+        cursor.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (name, email, password))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # session['username'] = name
+        return redirect(url_for('login'))
+    return render_template('signup.html')
+
+def is_valid_name(name):
+    # Add your validation logic here, for example:
+    # Name should contain only alphabets and spaces
+    return bool(re.match("^[a-zA-Z ]+$", name))
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('login'))
 
 @app.route('/recommend')
 def recommend_ui():

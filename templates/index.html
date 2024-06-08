@@ -9,15 +9,15 @@
 <!--    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='/css/index.css') }}">-->
 </head>
 <body class="">
-    <div class="max-w-4xl mx-auto mt-4 py-16">
+    <div class="max-w-5xl mx-auto mt-4 py-16">
         <!-- Header -->
         <div class="fixed top-0 left-0 right-0 bg-white bg-opacity-60 backdrop-blur-md shadow-md z-10">
-            <div class="max-w-4xl mx-auto flex justify-between items-center p-4">
+            <div class="max-w-5xl mx-auto flex justify-between items-center p-4">
                 <a href="#" class="text-2xl font-bold">
                     BOOK RECOMMENDER
 
                 </a>
-                <ul class="hidden lg:flex space-x-8 text-xl text-gray-700">
+                <ul class="hidden lg:flex space-x-6 items-center text-md text-gray-700">
                     <li>
                         <a href="#home" class="hover:text-pink-700">Home</a>
                     </li>
@@ -31,6 +31,19 @@
                     <li>
                         <a href="/recommend" class="hover:text-pink-700">Recommend</a>
                     </li>
+
+                    {% if 'username' in session %}
+                        <li >
+                            <a class="font-bold text-green-700" href="#">Welcome, {{ session['username'][0:10] }}!</a>
+                        </li>
+                        <li class="bg-pink-600 px-6 py-2 text-white rounded-full">
+                            <a class="nav-link text-warning fw-bold" href="{{ url_for('logout') }}"><i class="fa fa-power-off"></i> Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
