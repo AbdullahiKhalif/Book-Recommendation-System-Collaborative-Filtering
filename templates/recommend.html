@@ -48,33 +48,21 @@
         <div class="container mx-auto px-4 py-8">
             <!-- Book Recommender -->
             <div>
-                <form action="/recommend_books" method="post">
-                    <div class="relative mt-8">
-                        <input type="text" name="user_input" placeholder="Search a book" class="w-full p-2 pl-10 border rounded shadow focus:outline-none border-pink-400" required>
-                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                            <i class="fa fa-search w-6 h-6 text-pink-600"></i>
-                        </span>
-                    </div>
-                    <input type="submit" class="bg-pink-600 p-2 flex items-center text-center text-white font-bold text-xl w-28 rounded-lg mt-3 shadow hover:bg-pink-800 transition-colors duration-300">
-                </form>
+           <form id="searchForm" action="{{ url_for('get_recommendations') }}" method="post">
+    <div class="relative mt-8">
+        <input type="text" name="book_title" id="bookTitle" placeholder="Enter book title" class="w-full p-2 pl-10 border rounded shadow focus:outline-none border-pink-400" required>
+        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <i class="fa fa-search w-6 h-6 text-pink-600"></i>
+        </span>
+    </div>
+    <input type="submit" value="Recommendation" class="bg-pink-600 p-2 flex items-center text-center text-white font-bold text-md rounded-lg mt-3 shadow hover:bg-pink-800 transition-colors duration-300">
+</form>
+
+<div id="results"></div> <!-- Placeholder for results -->
+
             </div>
             <div>
-                {% if message %}
-                    <p class="text-red-500 text-2xl text-center w-full">{{ message }}</p>
-                {% endif %}
-                {% if data %}
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
-                        {% for i in data %}
-                        <div class="border border-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200 ease-in">
-                            <img src="{{ i[2] }}" alt="{{ i[0] }}" class="w-full h-48 rounded object-cover transition-transform duration-500 transform hover:scale-110 hover:rounded-lg" />
-                            <div class="p-4">
-                                <h2 class="font-bold mb-4">Book Title - {{ i[0] }}</h2>
-                                <p class="text-gray-600 mb-4 truncate">{{ i[1] }}</p>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+
             </div>
             <!-- End Book Recommender -->
             <div class="py-6 mt-16 border-t border-gray-200">
@@ -89,5 +77,54 @@
             </div>
         </div>
     </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#searchForm').on('submit', function(e) {
+        e.preventDefault();  // Prevent the default form submission
+
+        var bookTitle = $('#bookTitle').val();  // Get the value from the input field
+        var submitButton = $(this).find('input[type="submit"]');
+        submitButton.prop('disabled', true).val('Loading...'); // Disable the button and change button text to "Loading..."
+
+        $.ajax({
+            url: '{{ url_for("get_recommendations") }}',
+            method: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            data: {
+                book_title: bookTitle
+            },
+            success: function(response) {
+                if (response.message) {
+                    $('#results').html(`<p class="text-red-500 text-2xl text-center w-full">${response.message}</p>`);
+                } else if (response.data) {
+                    var books = response.data.map(function(book) {
+                        return `
+                            <div class="border border-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-200 ease-in">
+                                <img src="${book[2]}" alt="${book[1]}" class="w-full h-48 object-cover transition-transform duration-500 transform hover:scale-110 hover:rounded-lg" />
+                                <div class="p-4">
+                                    <h2 class="font-bold mb-4">Book Title - ${book[0]}</h2>
+                                    <p class="text-gray-600 mb-4 truncate">Book Author: ${book[1]}</p>
+                                    <p class="text-gray-600 mb-4 truncate">Average Rating: ${book[3]}</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    $('#results').html(`<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">${books}</div>`);
+                }
+                submitButton.prop('disabled', false).val('Recommendation'); // Re-enable the button and reset button text
+            },
+            error: function(xhr, status, error) {
+                $('#results').html(`<p class="text-red-500 text-xl text-center w-full">Failed to retrieve data. Please try again.</p>`);
+                console.error("Error occurred: " + error);
+                submitButton.prop('disabled', false).val('Recommendation'); // Re-enable the button and reset button text
+            }
+        });
+    });
+});
+
+</script>
+
 </body>
 </html>
